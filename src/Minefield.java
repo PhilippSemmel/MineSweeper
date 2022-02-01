@@ -3,16 +3,16 @@ import java.util.*;
 public class Minefield {
     private final int tilesInXDirection;
     private final int tilesInYDirection;
+    private final float minePercentage;
     private final int numberOfTiles;
     private Tile[][] tileArray;
     private int[][] allTilePositions;
-    private final float percentageOfMines;
 
-    Minefield(int tilesInXDirection, int tilesInYDirection, float percentageOfMines) {
+    Minefield(int tilesInXDirection, int tilesInYDirection, float minePercentage) {
         this.tilesInXDirection = tilesInXDirection;
         this.tilesInYDirection = tilesInYDirection;
         numberOfTiles = tilesInXDirection * tilesInYDirection;
-        this.percentageOfMines = percentageOfMines;
+        this.minePercentage = minePercentage;
         constructAttrs();
     }
 
@@ -22,18 +22,6 @@ public class Minefield {
     private void constructAttrs() {
         allTilePositions = generateAllTilePositions();
         tileArray = newTilesArray();
-    }
-
-    private int[][] generateAllTilePositions() {
-        int[][] positions = new int[numberOfTiles][2];
-        int index = 0;
-        for (int x = 0; x < tilesInXDirection; x++) {
-            for (int y = 0; y < tilesInYDirection; y++) {
-                positions[index] = new int[] {x, y};
-                index++;
-            }
-        }
-        return positions;
     }
 
     private Tile[][] newTilesArray() {
@@ -55,7 +43,7 @@ public class Minefield {
     }
 
     private int[][] getMinePositions(int[] pos) {
-        int minesToCreate = (int) (numberOfTiles * percentageOfMines);
+        int minesToCreate = (int) (numberOfTiles * minePercentage);
         int freeTiles =  numberOfTiles - minesToCreate;
         int[][] availableMinePositions = generateAllTilePositions();
         availableMinePositions = removePositionsAroundInitPos(availableMinePositions, pos, freeTiles - 1);
@@ -118,18 +106,6 @@ public class Minefield {
         getTile(middlePos[0], middlePos[1]).setMinesAround(nMines);
     }
 
-    private int[][] getPositionsAroundTile(int xPos, int yPos) {
-        int[][] positions = new int[][] {};
-        for (int x = xPos - 1; x < xPos + 2; x++) {
-            for (int y = yPos - 1; y < yPos + 2; y++) {
-                if (!isPositionsOnField(x, y)) continue;
-                if (isPositionInMiddle(xPos, yPos, x, y)) continue;
-                positions = addPosToPosArray(positions, new int[] {x, y});
-            }
-        }
-        return positions;
-    }
-
     private int[][] getPositionsAroundTile(int[] pos) {
         return getPositionsAroundTile(pos[0], pos[1]);
     }
@@ -159,14 +135,6 @@ public class Minefield {
             }
         }
         return indexOfVal;
-    }
-
-    private Tile getTile(int[] pos) {
-        return getTile(pos[0], pos[1]);
-    }
-
-    private Tile getTile(int x, int y) {
-        return tileArray[x][y];
     }
 
     private int getMinesToRemove(int positionsAround, int freeTiles) {
@@ -206,15 +174,15 @@ public class Minefield {
     public void uncoverTiles(int xPos, int yPos) {
         Tile tile = getTile(xPos, yPos);
         uncoverTile(xPos, yPos);
-        if (tile.isDetonated() || tile.isFlagged()) return;
+        if (tile.isDetonated() || tile.isFlagged() || tile.getMinesAround() != 0) return;
         for (int[] pos : getPositionsAroundTile(xPos, yPos)) {
             Tile t = getTile(pos);
-            if (t.isUncovered() || t.isFlagged()) continue;
+            if (t.isUncovered()) continue;
             uncoverTiles(pos);
         }
     }
 
-    public void uncoverTiles(int[] pos) {
+    private void uncoverTiles(int[] pos) {
         uncoverTiles(pos[0], pos[1]);
     }
 
@@ -226,18 +194,53 @@ public class Minefield {
     }
 
     /*
-    getter
+    getters
      */
     public Tile[][] getTilesArray() {
         return tileArray;
     }
 
     public int getXSize() {
-        return tileArray.length;
+        return tilesInXDirection;
     }
 
     public int getYSize() {
-        return tileArray[0].length;
+        return tilesInYDirection;
+    }
+
+    /*
+    misc
+     */
+    private Tile getTile(int[] pos) {
+        return getTile(pos[0], pos[1]);
+    }
+
+    private Tile getTile(int x, int y) {
+        return tileArray[x][y];
+    }
+
+    private int[][] getPositionsAroundTile(int xPos, int yPos) {
+        int[][] positions = new int[][] {};
+        for (int x = xPos - 1; x < xPos + 2; x++) {
+            for (int y = yPos - 1; y < yPos + 2; y++) {
+                if (!isPositionsOnField(x, y)) continue;
+                if (isPositionInMiddle(xPos, yPos, x, y)) continue;
+                positions = addPosToPosArray(positions, new int[] {x, y});
+            }
+        }
+        return positions;
+    }
+
+    private int[][] generateAllTilePositions() {
+        int[][] positions = new int[numberOfTiles][2];
+        int index = 0;
+        for (int x = 0; x < tilesInXDirection; x++) {
+            for (int y = 0; y < tilesInYDirection; y++) {
+                positions[index] = new int[] {x, y};
+                index++;
+            }
+        }
+        return positions;
     }
 }
 

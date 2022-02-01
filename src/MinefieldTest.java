@@ -10,21 +10,21 @@ public class MinefieldTest {
     private static class MinefieldTestInterface {
         public final int xSize;
         public final int ySize;
-        public final float percentageOfMines;
+        public final float minePercentage;
         public final Minefield field;
         
-        MinefieldTestInterface(int xSize, int ySize, float percentageOfMines) {
+        MinefieldTestInterface(int xSize, int ySize, float minePercentage) {
             this.xSize = xSize;
             this.ySize = ySize;
-            this.percentageOfMines = percentageOfMines;
-            this.field = new Minefield(xSize, ySize, percentageOfMines);
+            this.minePercentage = minePercentage;
+            this.field = new Minefield(xSize, ySize, minePercentage);
         }
 
-        MinefieldTestInterface(int size, float percentageOfMines) {
+        MinefieldTestInterface(int size, float minePercentage) {
             this.xSize = size;
             this.ySize = size;
-            this.percentageOfMines = percentageOfMines;
-            this.field = new Minefield(xSize, ySize, percentageOfMines);
+            this.minePercentage = minePercentage;
+            this.field = new Minefield(xSize, ySize, minePercentage);
         }
 
         /*
@@ -55,65 +55,6 @@ public class MinefieldTest {
         }
 
         /*
-        for debugging
-         */
-        public String minesAround() {
-            StringBuilder positions = new StringBuilder();
-            for (int x = 0; x < xSize; x++) {
-                for (int y = 0; y < ySize; y++) {
-                    positions.append(tileAtPos(x, y).getMinesAround()).append(" ");
-                }
-                positions.append("\n");
-            }
-            return positions.toString();
-        }
-
-        public String uncovered() {
-            StringBuilder positions = new StringBuilder();
-            for (int x = 0; x < xSize; x++) {
-                for (int y = 0; y < ySize; y++) {
-                    if (tileAtPos(x, y).isUncovered()) {
-                        positions.append("1 ");
-                    } else {
-                        positions.append("0 ");
-                    }
-                }
-                positions.append("\n");
-            }
-            return positions.toString();
-        }
-
-        public String flagged() {
-            StringBuilder positions = new StringBuilder();
-            for (int x = 0; x < xSize; x++) {
-                for (int y = 0; y < ySize; y++) {
-                    if (tileAtPos(x, y).isFlagged()) {
-                        positions.append("1 ");
-                    } else {
-                        positions.append("0 ");
-                    }
-                }
-                positions.append("\n");
-            }
-            return positions.toString();
-        }
-
-        public String mines() {
-            StringBuilder positions = new StringBuilder();
-            for (int x = 0; x < xSize; x++) {
-                for (int y = 0; y < ySize; y++) {
-                    if (tileAtPos(x, y).isMine()) {
-                        positions.append("1 ");
-                    } else {
-                        positions.append("0 ");
-                    }
-                }
-                positions.append("\n");
-            }
-            return positions.toString();
-        }
-
-        /*
         support methods
          */
         public Tile tileAtPos(int[] pos) {
@@ -124,7 +65,47 @@ public class MinefieldTest {
             return getTilesArray()[x][y];
         }
 
-        private int[][] getAllPositions() {
+        public boolean isTileFlagged(int x, int y) {
+            return tileAtPos(x, y).isFlagged();
+        }
+
+        public boolean isTileFlagged(int[] pos) {
+            return isTileFlagged(pos[0], pos[1]);
+        }
+
+        public boolean isTileUncovered(int x, int y) {
+            return tileAtPos(x, y).isUncovered();
+        }
+
+        public boolean isTileUncovered(int[] pos) {
+            return isTileUncovered(pos[0], pos[1]);
+        }
+
+        public boolean isTileMine(int x, int y) {
+            return tileAtPos(x, y).isMine();
+        }
+
+        public boolean isTileMine(int[] pos) {
+            return isTileMine(pos[0], pos[1]);
+        }
+
+        public boolean isTileDetonated(int x, int y) {
+            return tileAtPos(x, y).isDetonated();
+        }
+
+        public boolean isTileDetonated(int[] pos) {
+            return isTileDetonated(pos[0], pos[1]);
+        }
+
+        public int getTileMinesAround(int x, int y) {
+            return tileAtPos(x, y).getMinesAround();
+        }
+
+        public int getTileMinesAround(int[] pos) {
+            return getTileMinesAround(pos[0], pos[1]);
+        }
+
+        public int[][] getAllPositions() {
             int[][] positions = new int[xSize * ySize][2];
             int index = 0;
             for (int x = 0; x < xSize; x++) {
@@ -136,62 +117,54 @@ public class MinefieldTest {
             return positions;
         }
 
-        private boolean noTilesUncovered() {
+        public boolean noTilesUncovered() {
             for (int[] pos : getAllPositions()) {
-                if (tileAtPos(pos).isUncovered()) return false;
+                if (isTileUncovered(pos)) return false;
             }
             return true;
         }
 
-        private boolean noTilesFlagged() {
+        public boolean noTilesFlagged() {
             for (int[] pos : getAllPositions()) {
-                if (tileAtPos(pos).isFlagged()) return false;
+                if (isTileFlagged(pos)) return false;
             }
             return true;
         }
 
-        private boolean noMineAroundTile() {
+        public boolean noMineAroundTile() {
             for (int[] pos : getAllPositions()) {
-                if (tileAtPos(pos).getMinesAround() != 0) return false;
+                if (getTileMinesAround(pos) != 0) return false;
             }
             return true;
         }
 
-        private boolean noMines() {
+        public boolean noMines() {
             for (int[] pos : getAllPositions()) {
-                if (tileAtPos(pos).isMine()) return false;
+                if (isTileMine(pos)) return false;
             }
             return true;
         }
 
-        private boolean noDetonatedMine() {
+        public boolean noDetonatedMine() {
             for (int[] pos : getAllPositions()) {
-                if (tileAtPos(pos).isDetonated()) return false;
+                if (isTileDetonated(pos)) return false;
             }
             return true;
         }
 
-        private boolean isTileFlagged() {
-            return tileAtPos(0, 0).isFlagged();
+        public int getExpectedNumMines() {
+            return (int) (xSize * ySize * minePercentage);
         }
 
-        private boolean isTileUncovered(int x, int y) {
-            return tileAtPos(x, y).isUncovered();
-        }
-
-        private int getExpectedNumMines() {
-            return (int) (xSize * ySize * percentageOfMines);
-        }
-
-        private int getActualNumMines() {
+        public int getActualNumMines() {
             int numMines = 0;
             for (int[] pos : getAllPositions()) {
-                if (tileAtPos(pos).isMine()) numMines++;
+                if (isTileMine(pos)) numMines++;
             }
             return numMines;
         }
 
-        private int[][] getPositionsAround(int xPos, int yPos) {
+        public int[][] getPositionsAround(int xPos, int yPos) {
             int[][] positions = new int[][]{};
             for (int x = xPos - 1; x < xPos + 2; x++) {
                 for (int y = yPos - 1; y < yPos + 2; y++) {
@@ -203,21 +176,21 @@ public class MinefieldTest {
             return positions;
         }
 
-        private boolean isMiddlePos(int x1, int x2, int y1, int y2) {
+        public boolean isMiddlePos(int x1, int x2, int y1, int y2) {
             return x1 == x2 && y1 == y2;
         }
 
-        private int[][] addPosToPosArray(int[][] posArray, int x, int y) {
+        public int[][] addPosToPosArray(int[][] posArray, int x, int y) {
             posArray = Arrays.copyOf(posArray, posArray.length + 1);
             posArray[posArray.length - 1] = new int[]{x, y};
             return posArray;
         }
 
-        private boolean posNotOnMinefield(int x, int y) {
+        public boolean posNotOnMinefield(int x, int y) {
             return (x < 0) || (y < 0) || (x >= xSize) || (y >= ySize);
         }
 
-        private int getMinesAround(int x, int y) {
+        public int getMinesAround(int x, int y) {
             int minesAround = 0;
             for (int[] pos : getPositionsAround(x, y)) {
                 if (tileAtPos(pos[0], pos[1]).isMine()) minesAround++;
@@ -225,32 +198,115 @@ public class MinefieldTest {
             return minesAround;
         }
 
-        private boolean allTilesAroundUncovered() {
+        public boolean allTilesAroundUncovered() {
             for (int[] pos : getPositionsAround(1, 1)) {
-                if (!tileAtPos(pos).isUncovered()) return false;
+                if (!isTileUncovered(pos)) return false;
             }
             return true;
         }
 
-        private boolean noTilesAroundUncovered() {
+        public boolean noTilesAroundUncovered() {
             for (int[] pos : getPositionsAround(1, 1)) {
-                if (tileAtPos(pos).isUncovered()) return false;
+                if (isTileUncovered(pos)) return false;
             }
             return true;
         }
 
-        private boolean noMinesAroundAndAtPos(int x, int y) {
+        public boolean noMinesAroundAndAtPos(int x, int y) {
             for (int[] pos : getPositionsAround(x, y)) {
-                if (tileAtPos(pos).isMine()) return false;
+                if (isTileMine(pos)) return false;
             }
             return !tileAtPos(x, y).isMine();
         }
 
-        private boolean minePositionAreEqual(MinefieldTestInterface otherField) {
+        public boolean minePositionAreEqual(MinefieldTestInterface otherField) {
             for (int[] pos : getAllPositions()) {
                 if (tileAtPos(pos) != otherField.tileAtPos(pos)) return false;
             }
             return true;
+        }
+
+        public static MinefieldTestInterface[] newMinefieldArray(int nFields) {
+            MinefieldTestInterface[] fields = new MinefieldTestInterface[nFields];
+            for (int i = 0; i < nFields; i++) {
+                fields[i] = new MinefieldTestInterface(10, 0.5F);
+            }
+            return fields;
+        }
+
+        public static void initAllMinefieldsInMinefieldArray(int testSize, MinefieldTestInterface[] testField) {
+            for (int i = 0; i < testSize; i++) {
+                testField[i].init(1, 1);
+            }
+        }
+
+        public static boolean minePositionsOnEveryMinefieldDiffer(MinefieldTestInterface[] fields) {
+            for (int i = 0; i < fields.length; i++) {
+                for (int j = 0; j < fields.length; j++) {
+                    if (i == j) continue;
+                    if (fields[i].minePositionAreEqual(fields[j])) return false;
+                }
+            }
+            return true;
+        }
+
+        /*
+        for debugging
+         */
+        public void debugViewMinesAroundTiles() {
+            StringBuilder positions = new StringBuilder();
+            for (int x = 0; x < xSize; x++) {
+                for (int y = 0; y < ySize; y++) {
+                    positions.append(tileAtPos(x, y).getMinesAround()).append(" ");
+                }
+                positions.append("\n");
+            }
+            System.out.println(positions);
+        }
+
+        public void debugViewUncoveredTiles() {
+            StringBuilder positions = new StringBuilder();
+            for (int x = 0; x < xSize; x++) {
+                for (int y = 0; y < ySize; y++) {
+                    if (tileAtPos(x, y).isUncovered()) {
+                        positions.append("1 ");
+                    } else {
+                        positions.append("0 ");
+                    }
+                }
+                positions.append("\n");
+            }
+            System.out.println(positions);
+        }
+
+        public void debugViewFlaggedTiles() {
+            StringBuilder positions = new StringBuilder();
+            for (int x = 0; x < xSize; x++) {
+                for (int y = 0; y < ySize; y++) {
+                    if (tileAtPos(x, y).isFlagged()) {
+                        positions.append("1 ");
+                    } else {
+                        positions.append("0 ");
+                    }
+                }
+                positions.append("\n");
+            }
+            System.out.println(positions);
+        }
+
+        public void debugViewMines() {
+            StringBuilder positions = new StringBuilder();
+            for (int x = 0; x < xSize; x++) {
+                for (int y = 0; y < ySize; y++) {
+                    if (tileAtPos(x, y).isMine()) {
+                        positions.append("1 ");
+                    } else {
+                        positions.append("0 ");
+                    }
+                }
+                positions.append("\n");
+            }
+            System.out.println(positions);
         }
     }
 
@@ -344,20 +400,20 @@ public class MinefieldTest {
     @Test
     public void tileXFlaggedAfterAlteringFlaggedStatusOfTileX() {
         minefield1.alterTileFlagged(0, 0);
-        assertTrue(minefield1.isTileFlagged());
+        assertTrue(minefield1.isTileFlagged(0 , 0));
     }
 
     @Test
     public void tileXIsNotFlaggedAfterAlteringFlaggedStatusOfTileY() {
         minefield1.alterTileFlagged(1, 1);
-        assertFalse(minefield1.isTileFlagged());
+        assertFalse(minefield1.isTileFlagged(0 , 0));
     }
 
     @Test
     public void tileNotFlaggedAfterAlteringFlaggedStatusTwice() {
         minefield1.alterTileFlagged(0, 0);
         minefield1.alterTileFlagged(0, 0);
-        assertFalse(minefield1.isTileFlagged());
+        assertFalse(minefield1.isTileFlagged(0 , 0));
     }
 
     @Test
@@ -384,7 +440,7 @@ public class MinefieldTest {
     public void cannotFlagAUncoveredTile() {
         minefield1.uncoverTiles(0, 0);
         minefield1.alterTileFlagged(0, 0);
-        assertFalse(minefield1.isTileFlagged());
+        assertFalse(minefield1.isTileFlagged(0 , 0));
     }
 
     @Test
@@ -415,9 +471,9 @@ public class MinefieldTest {
     @Test
     public void minePositionsAreGeneratedRandomly() {
         int testSize = 10;
-        MinefieldTestInterface[] testFields = newMinefieldArray(testSize);
-        initAllMinefieldsInMinefieldArray(testSize, testFields);
-        assertTrue(minePositionsOnEveryMinefieldDiffer(testFields));
+        MinefieldTestInterface[] testFields = MinefieldTestInterface.newMinefieldArray(testSize);
+        MinefieldTestInterface.initAllMinefieldsInMinefieldArray(testSize, testFields);
+        assertTrue(MinefieldTestInterface.minePositionsOnEveryMinefieldDiffer(testFields));
     }
 
     /**
@@ -587,7 +643,7 @@ public class MinefieldTest {
         f.init(1, 1);
         f.uncoverTiles(1, 1);
         for (int[] pos : f.getAllPositions()) {
-            assertTrue(f.tileAtPos(pos).isUncovered());
+            assertTrue(f.isTileUncovered(pos));
         }
     }
 
@@ -607,27 +663,25 @@ public class MinefieldTest {
         assertTrue(minefield091.noTilesAroundUncovered());
     }
 
-    private MinefieldTestInterface[] newMinefieldArray(int nFields) {
-        MinefieldTestInterface[] fields = new MinefieldTestInterface[nFields];
-        for (int i = 0; i < nFields; i++) {
-            fields[i] = new MinefieldTestInterface(10, 0.5F);
-        }
-        return fields;
-    }
-
-    private void initAllMinefieldsInMinefieldArray(int testSize, MinefieldTestInterface[] testField) {
-        for (int i = 0; i < testSize; i++) {
-            testField[i].init(1, 1);
+    @Test
+    public void tilesAroundTileWithMinesAroundAreNotUncovered() {
+        minefield091.init(1, 1);
+        minefield091.uncoverTiles(1, 1);
+        for (int[] pos : new int[][] {new int[]{3,0}, new int[]{3,1}, new int[]{3,2},new int[]{3,3},new int[]{0,3},new int[]{1,3},new int[]{2,3},}) {
+            assertFalse(minefield091.isTileUncovered(pos));
         }
     }
 
-    private boolean minePositionsOnEveryMinefieldDiffer(MinefieldTestInterface[] fields) {
-        for (int i = 0; i < fields.length; i++) {
-            for (int j = 0; j < fields.length; j++) {
-                if (i == j) continue;
-                if (fields[i].minePositionAreEqual(fields[j])) return false;
-            }
-        }
-        return true;
+    @Test
+    public void cannotUncoverTilesAroundFlaggedTileWhichIsAroundTheClickedTile() {
+        MinefieldTestInterface f;
+        do {
+            f = new MinefieldTestInterface(3, 5, 2.0F / 15.0F);
+            f.init(0, 2);
+        } while (!((f.isTileMine(0, 0) || f.isTileMine(1, 0) || f.isTileMine(2, 0)) &&
+                (f.isTileMine(0, 4) || f.isTileMine(1, 4) || f.isTileMine(2, 4))));
+        f.alterTileFlagged(1, 2);
+        f.uncoverTiles(0, 2);
+        assertFalse(f.isTileUncovered(2, 1) && f.isTileUncovered(2, 2) && f.isTileUncovered(2, 3));
     }
 }
